@@ -105,12 +105,12 @@ def remember(
         Retrieve historical chat records between users and LLM
     """
 
-    if start_date is "":
+    if start_date == "":
         start = datetime.now() + timedelta(days=-90)
     else:
         start = datetime.strptime(start_date, '%Y%m%d')
 
-    if end_date is "":
+    if end_date == "":
         end = datetime.now() + timedelta(days=1)
     else:
         end = datetime.strptime(end_date, '%Y%m%d')

@@ -16,7 +16,11 @@ def init_logger():
 
 def main() -> None:
     init_logger()
-    logging.info("chatmcp_memory:\nversion：%s", "0.0.5")
+
+    print("#### chatmcp_memory ####")
+    print("Project page: https://github.com/vearne/chatmcp_memory")
+    print("Author: <vearne> asdwoshiaotian@gmail.com")
+    print("Version: 0.0.6")
 
     # creating a command line argument parser
     parser = argparse.ArgumentParser(description="An MCP server capable of give large language models the power to remember.")
