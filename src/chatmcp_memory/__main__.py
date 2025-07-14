@@ -14,7 +14,7 @@ def create_mcp() -> FastMCP:
 def init_logger():
     logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s %(message)s", level=logging.INFO)
 
-def main():
+def main() -> None:
     init_logger()
 
     # creating a command line argument parser
@@ -27,12 +27,10 @@ def main():
     args = parser.parse_args()
 
     mcp = create_mcp()
-    # if args.http:
-    #     mcp.run(transport="streamable-http", host=args.bind, port=args.port)
-    # else:
-    #     mcp.run()
-
-    mcp.run(transport="streamable-http", host=args.bind, port=args.port)
+    if args.http:
+        mcp.run(transport="streamable-http", host=args.bind, port=args.port)
+    else:
+        mcp.run()
 
 if __name__ == "__main__":
     main()

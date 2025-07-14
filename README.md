@@ -12,13 +12,14 @@ Of course, it can also be specified via environment variables.
 export DB_FILE_PATH=/tmp/chatmcp.db
 ```
 ### 1. use with uvx
+```
 "mcpServers": {
     "chatmcp_memory": {
         "command": "uvx",
         "args": ["--from", "chatmcp_memory", "chatmcp_memory"]
     }
 }
-
+```
 ### 2.Install and Run
 ```
 pip install chatmcp_memory
