@@ -7,7 +7,7 @@ packages = ["src/chatmcp_memory"]
 
 [project]
 name            = "chatmcp_memory"
-version         = "0.0.2"
+version         = "0.0.3"
 description     = "An MCP server able to give large language models the power to remember."
 readme          = "README.md"
 license         = {text = "MIT"}

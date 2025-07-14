@@ -111,7 +111,8 @@ def remember(
         start = datetime.strptime(start_date, '%Y%m%d')
 
     if end_date is "":
-        end = datetime.now()
+        # SQLite has no notion of time zones; to accommodate them, add one day to end.
+        end = datetime.now() + timedelta(days=1)
     else:
         end = datetime.strptime(end_date, '%Y%m%d')
 
