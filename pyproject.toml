@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 packages = ["src/chatmcp_memory"]
 
 [project]
-name            = "vearne_akshare_mcp"
+name            = "chatmcp_memory"
 version         = "0.0.1"
 description     = "An MCP server able to give large language models the power to remember.<br/>"
 readme          = "README.md"
