@@ -16,7 +16,7 @@ export DB_FILE_PATH=/tmp/chatmcp.db
 "mcpServers": {
     "chatmcp_memory": {
         "command": "uvx",
-        "args": ["--from", "chatmcp_memory", "chatmcp_memory"]
+        "args": ["chatmcp_memory"]
     }
 }
 ```
