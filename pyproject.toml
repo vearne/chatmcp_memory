@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/chatmcp_memory"]
+
+[project]
+name            = "vearne_akshare_mcp"
+version         = "0.0.1"
+description     = "An MCP server able to give large language models the power to remember.<br/>"
+readme          = "README.md"
+license         = {text = "MIT"}
+authors         = [{name = "vearne", email = "asdwoshiaotian@gmail.com"}]
+requires-python = ">=3.8"
+dependencies    = [
+    "fastmcp==2.10.5",
+    "pydantic==2.11.7",
+]
+
+[project.urls]
+Homepage = "https://github.com/vearne/chatmcp_memory"
+
+[project.scripts]
+chatmcp_memory = "chatmcp_memory.__main__:main"
