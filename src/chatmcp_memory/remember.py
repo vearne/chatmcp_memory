@@ -1,5 +1,4 @@
 import logging
-
 from pydantic import Field
 from typing import Annotated
 from enum import Enum
@@ -10,6 +9,8 @@ import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta
 import json
+from collections import defaultdict
+from typing import List, Dict, Any
 
 from .dto import Chat, ChatMessage
 
@@ -90,33 +91,31 @@ def get_db_path() -> str:
     db_path = os.path.join(app_data_path, 'chatmcp.db')
     return db_path
 
+def parse_date(date_str: str, default: datetime) -> datetime:
+    if date_str:
+        return datetime.strptime(date_str, '%Y%m%d')
+    return default
+
 
 def remember(
         keyword: Annotated[str, Field(description="key word")],
-        start_date: Annotated[str, Field(
-            description="Start date in 'YYYYMMDD' format (e.g. '20250620'). When empty, automatically uses the date 3 months before today")],
-        end_date: Annotated[str, Field(
-            description="End date in 'YYYYMMDD' format (e.g. '20250703'). When empty, automatically uses today's date")],
+        start_date: Annotated[str | None,
+            Field(description="Start date in 'YYYYMMDD' format.When empty, automatically uses the date 3 months before today",
+                examples=["20250620"])] = None,
+        end_date: Annotated[str | None,
+            Field(description="End date in 'YYYYMMDD' format.When empty, automatically uses today's date",
+                examples=["20250710"])] = None,
         max_message_count: Annotated[
-            int | None, Field(description="The maximum number of messages that can be returned, default: 200", ge=1)
+            int, Field(description="The maximum number of messages that can be returned", default=200, ge=1)
         ] = 200,
 ) -> str:
     """
-        Retrieve historical chat records between users and LLM
+    Retrieve historical chat records between users and LLM.
     """
-
-    if start_date == "":
-        start = datetime.now() + timedelta(days=-90)
-    else:
-        start = datetime.strptime(start_date, '%Y%m%d')
-
-    if end_date == "":
-        end = datetime.now() + timedelta(days=1)
-    else:
-        end = datetime.strptime(end_date, '%Y%m%d')
-
-    # SQLite has no notion of time zones; to accommodate them, add one day to end.
-    end = end + timedelta(days=1)
+    start = parse_date(start_date, datetime.now() - timedelta(days=90))
+    end = parse_date(end_date, datetime.now())
+    # Add one day to end to include the entire end date
+    end += timedelta(days=1)
 
     db_path = get_db_path()
     logging.info("db_path:%s", db_path)
@@ -141,24 +140,28 @@ def remember(
     """
     pattern = f'%{keyword}%'
     logging.info("query params: %s", (pattern, start, end, max_message_count))
-    with sqlite3.connect(db_path) as conn:
-        record_list = fetch_dict(conn, sql, (pattern, start, end, max_message_count))
 
-    # order by time (ascending)
+    with sqlite3.connect(db_path) as conn:
+        record_list: List[Dict[str, Any]] = fetch_dict(conn, sql, (pattern, start, end, max_message_count))
+
+    if not record_list:
+        logging.info("No chat messages found for the given criteria.")
+        return json.dumps({"result": []})
+
+    # Reverse to ascending order by time
     record_list.reverse()
     logging.info("get chatMessage: %d", len(record_list))
 
-    session_map = {}
+    session_map: Dict[int, Chat] = defaultdict(Chat)
+
     for record in record_list:
-        chat_id = record["chatId"]
-        if not chat_id in session_map:
-            c = Chat()
-            c.chat_id = int(chat_id)
-            c.title = record["title"]
-            c.model = record["model"]
-            c.created_at = record["chatCreatedAt"]
-            c.messages = []
-            session_map[chat_id] = c
+        chat_id = int(record["chatId"])
+        if not session_map[chat_id].chat_id:
+            session_map[chat_id].chat_id = chat_id
+            session_map[chat_id].title = record["title"]
+            session_map[chat_id].model = record["model"]
+            session_map[chat_id].created_at = record["chatCreatedAt"]
+            session_map[chat_id].messages = []
 
         msg = ChatMessage()
         msg.message_id = record["messageId"]
@@ -167,14 +170,10 @@ def remember(
         msg.created_at = record["createdAt"]
         session_map[chat_id].messages.append(msg)
 
-    result = []
-    for record in record_list:
-        chat_id = record["chatId"]
-        if chat_id in session_map:
-            result.append(session_map.pop(chat_id).model_dump())
+    result = [chat.model_dump() for chat in session_map.values()]
 
     logging.info("get chat: %d", len(result))
-    return json.dumps({"result":result})
+    return json.dumps({"result": result})
 
 # convert to dictionary format
 def fetch_dict(conn, sql, params=()):
