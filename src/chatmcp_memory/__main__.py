@@ -20,7 +20,7 @@ def main() -> None:
     print("#### chatmcp_memory ####")
     print("Project page: https://github.com/vearne/chatmcp_memory")
     print("Author: <vearne> asdwoshiaotian@gmail.com")
-    print("Version: 0.0.6")
+    print("Version: 0.0.8")
 
     # creating a command line argument parser
     parser = argparse.ArgumentParser(description="An MCP server capable of give large language models the power to remember.")
